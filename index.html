@@ -326,7 +326,8 @@
             for(let i = 0; i < rainDrops.length; i++) {
                 const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
                 // Màu xanh ngẫu nhiên đậm nhạt để tạo chiều sâu
-                ctx.fillStyle = `rgba(0, ${Math.floor(Math.random() * 155) + 100}, 255, 0.8)`; 
+                // Màu Cyan Neon cực sáng (Code mới)
+                ctx.fillStyle = '#00ffff'; 
                 ctx.fillText(text, i*fontSize, rainDrops[i]*fontSize);
 
                 if(rainDrops[i]*fontSize > canvas.height && Math.random() > 0.975){
