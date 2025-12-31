@@ -10,7 +10,8 @@
             --primary: #00f3ff; /* Cyan HCMUS vibe */
             --secondary: #bd00ff;
             --bg: #050505;
-            --card-bg: rgba(20, 20, 30, 0.7);
+            /* Tăng độ đậm nền thẻ để nổi bật hơn trên nền Matrix */
+            --card-bg: rgba(10, 25, 40, 0.9); 
             --text: #ffffff;
         }
 
@@ -76,33 +77,37 @@
             z-index: 10;
         }
 
-        /* Cards */
+        /* Cards - Đã chỉnh sửa để nổi bật hơn */
         .exam-card {
             background: var(--card-bg);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            /* Viền mặc định sáng để nổi bật */
+            border: 1px solid var(--primary); 
             backdrop-filter: blur(10px);
             border-radius: 15px;
             padding: 25px;
             position: relative;
             overflow: hidden;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+            /* Hiệu ứng phát sáng mặc định */
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.15); 
         }
 
         .exam-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 0 20px rgba(0, 243, 255, 0.4);
-            border-color: var(--primary);
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.6);
+            border-color: #fff;
         }
 
+        /* Chỉ giữ thanh màu gradient cho các môn chưa thi */
         .exam-card::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
-            height: 3px;
+            height: 4px; /* Dày hơn xíu */
             background: linear-gradient(90deg, var(--secondary), var(--primary));
+            z-index: 2;
         }
 
         .subject-name {
@@ -110,15 +115,17 @@
             font-weight: 700;
             margin-bottom: 10px;
             color: #fff;
+            text-shadow: 0 0 5px rgba(0,0,0,0.5);
         }
 
         .exam-time {
             font-size: 0.9rem;
-            color: #ccc;
+            color: #ddd; /* Sáng hơn chút */
             margin-bottom: 20px;
             display: flex;
             align-items: center;
             gap: 10px;
+            font-weight: 600;
         }
 
         /* Countdown Digits */
@@ -130,11 +137,11 @@
 
         .time-box {
             text-align: center;
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(0, 0, 0, 0.6); /* Nền đậm hơn để số rõ hơn */
             padding: 10px 5px;
             border-radius: 8px;
             min-width: 60px;
-            border: 1px solid rgba(0, 243, 255, 0.2);
+            border: 1px solid rgba(0, 243, 255, 0.4);
         }
 
         .time-val {
@@ -142,12 +149,13 @@
             font-weight: 700;
             color: var(--primary);
             display: block;
+            text-shadow: 0 0 10px var(--primary); /* Số phát sáng */
         }
 
         .time-label {
             font-size: 0.7rem;
             text-transform: uppercase;
-            color: #888;
+            color: #aaa;
         }
 
         /* Status Badges */
@@ -159,10 +167,12 @@
             padding: 5px 10px;
             border-radius: 20px;
             background: rgba(255, 255, 255, 0.1);
+            font-weight: bold;
+            z-index: 2;
         }
 
-        .status.urgent { background: rgba(255, 50, 50, 0.3); color: #ff5555; border: 1px solid #ff5555; }
-        .status.done { background: rgba(50, 255, 50, 0.2); color: #55ff55; }
+        .status.urgent { background: rgba(255, 50, 50, 0.3); color: #ff5555; border: 1px solid #ff5555; box-shadow: 0 0 10px #ff0000; }
+        .status.done { background: rgba(50, 255, 50, 0.1); color: #55ff55; border: 1px solid #55ff55; }
 
         /* Footer */
         footer {
@@ -198,15 +208,26 @@
     </footer>
 
     <script>
-        // --- 1. Dữ liệu Lịch thi (Năm 2026) ---
+        // --- 1. Dữ liệu Lịch thi ---
+        // Đã cập nhật thêm 2 môn đã thi (Năm 2025) và các môn sắp thi (Năm 2026)
         const exams = [
+            {
+                subject: "Thực hành - Cơ sở lập trình",
+                date: "2025-12-26T08:00:00", // Đã qua
+                icon: "✅"
+            },
+            {
+                subject: "Thực hành - Vi tích phân 1",
+                date: "2025-12-31T10:00:00", // Đã qua (so với chiều 31/12)
+                icon: "✅"
+            },
             {
                 subject: "Nhập môn Công nghệ thông tin",
                 date: "2026-01-19T09:55:00",
                 icon: "💻"
             },
             {
-                subject: "Vi tích phân 1", // Thường IT học 1B
+                subject: "Vi tích phân 1B", 
                 date: "2026-01-21T07:45:00",
                 icon: "∫"
             },
@@ -265,12 +286,19 @@
                 const timerDiv = document.getElementById(`timer-${index}`);
 
                 if (distance < 0) {
-                    // Đã thi xong
-                    timerDiv.innerHTML = '<h3 style="color: #55ff55; text-align:center; width:100%">MISSION COMPLETED</h3>';
+                    // --- XỬ LÝ KHI ĐÃ THI XONG ---
+                    timerDiv.innerHTML = '<h3 style="color: #55ff55; text-align:center; width:100%; letter-spacing: 2px;">MISSION COMPLETED</h3>';
                     statusBadge.innerText = "DONE";
                     statusBadge.className = "status done";
-                    card.style.opacity = "0.6"; // Làm mờ nhẹ
+                    
+                    // Làm tối các môn đã xong để các môn sắp thi nổi bật hơn
+                    card.style.opacity = "0.4"; 
+                    card.style.borderColor = "#333";
+                    card.style.boxShadow = "none";
+                    card.style.background = "rgba(0,0,0,0.5)";
+                    
                 } else {
+                    // --- XỬ LÝ KHI SẮP THI ---
                     // Tính toán thời gian
                     const days = Math.floor(distance / (1000 * 60 * 60 * 24));
                     const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -283,11 +311,12 @@
                     timerDiv.querySelector('.m').innerText = minutes < 10 ? '0' + minutes : minutes;
                     timerDiv.querySelector('.s').innerText = seconds < 10 ? '0' + seconds : seconds;
 
-                    // Hiệu ứng "Sắp thi" (còn dưới 3 ngày)
+                    // Hiệu ứng "Sắp thi" (còn dưới 3 ngày) - Đổi màu đỏ báo động
                     if (days < 3) {
                         statusBadge.innerText = "URGENT";
                         statusBadge.className = "status urgent";
                         card.style.borderColor = "#ff5555";
+                        card.style.boxShadow = "0 0 20px rgba(255, 85, 85, 0.4)";
                     }
                 }
             });
@@ -296,7 +325,7 @@
         setInterval(updateCountdown, 1000);
         updateCountdown();
 
-        // --- 4. Matrix Rain Effect (Canvas) ---
+        // --- 4. Matrix Rain Effect (Bright Neon Version) ---
         const canvas = document.getElementById('matrix-bg');
         const ctx = canvas.getContext('2d');
 
@@ -320,13 +349,12 @@
             ctx.fillStyle = 'rgba(5, 5, 5, 0.05)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            ctx.fillStyle = '#0F0'; // Green text
             ctx.font = fontSize + 'px monospace';
 
             for(let i = 0; i < rainDrops.length; i++) {
                 const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
-                // Màu xanh ngẫu nhiên đậm nhạt để tạo chiều sâu
-                // Màu Cyan Neon cực sáng (Code mới)
+                
+                // Giữ nguyên màu sáng Neon Cyan mà bạn thích
                 ctx.fillStyle = '#00ffff'; 
                 ctx.fillText(text, i*fontSize, rainDrops[i]*fontSize);
 
