@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K25 HCMUS - Countdown to Glory</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@500;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00f3ff; /* Cyan HCMUS vibe */
+            --secondary: #bd00ff;
+            --bg: #050505;
+            --card-bg: rgba(20, 20, 30, 0.7);
+            --text: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'JetBrains Mono', monospace;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Canvas Matrix Effect */
+        #matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.3;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin: 40px 0;
+            z-index: 10;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--primary);
+            text-shadow: 0 0 10px var(--primary), 0 0 20px var(--primary);
+            animation: glitch 1s linear infinite;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: #aaa;
+            margin-top: 10px;
+        }
+
+        /* Grid Layout */
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            width: 90%;
+            max-width: 1200px;
+            padding-bottom: 50px;
+            z-index: 10;
+        }
+
+        /* Cards */
+        .exam-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .exam-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.4);
+            border-color: var(--primary);
+        }
+
+        .exam-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--secondary), var(--primary));
+        }
+
+        .subject-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .exam-time {
+            font-size: 0.9rem;
+            color: #ccc;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Countdown Digits */
+        .timer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+
+        .time-box {
+            text-align: center;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px 5px;
+            border-radius: 8px;
+            min-width: 60px;
+            border: 1px solid rgba(0, 243, 255, 0.2);
+        }
+
+        .time-val {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: block;
+        }
+
+        .time-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: #888;
+        }
+
+        /* Status Badges */
+        .status {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 0.7rem;
+            padding: 5px 10px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .status.urgent { background: rgba(255, 50, 50, 0.3); color: #ff5555; border: 1px solid #ff5555; }
+        .status.done { background: rgba(50, 255, 50, 0.2); color: #55ff55; }
+
+        /* Footer */
+        footer {
+            margin-top: auto;
+            padding: 20px;
+            color: #555;
+            font-size: 0.8rem;
+            text-align: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            h1 { font-size: 1.8rem; }
+            .container { width: 95%; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="matrix-bg"></canvas>
+
+    <header>
+        <h1>K25 FIT HCMUS</h1>
+        <div class="subtitle">> SYSTEM STATUS: EXAM_MODE_ACTIVATED_</div>
+        <div class="subtitle" style="color: var(--primary); margin-top:5px; font-weight:bold">FIGHTING!</div>
+    </header>
+
+    <div class="container" id="exam-container">
+        </div>
+
+    <footer>
+        <p>Built for HCMUS Students | Good Luck & Have Fun</p>
+    </footer>
+
+    <script>
+        // --- 1. Dữ liệu Lịch thi (Năm 2026) ---
+        const exams = [
+            {
+                subject: "Nhập môn Công nghệ thông tin",
+                date: "2026-01-19T09:55:00",
+                icon: "💻"
+            },
+            {
+                subject: "Vi tích phân 1B", // Thường IT học 1B
+                date: "2026-01-21T07:45:00",
+                icon: "∫"
+            },
+            {
+                subject: "Cơ sở lập trình",
+                date: "2026-01-26T13:30:00",
+                icon: "C++"
+            },
+            {
+                subject: "Toán rời rạc",
+                date: "2026-01-27T09:55:00",
+                icon: "🎲"
+            }
+        ];
+
+        const container = document.getElementById('exam-container');
+
+        // --- 2. Render HTML ---
+        function renderCards() {
+            container.innerHTML = exams.map((exam, index) => {
+                const dateObj = new Date(exam.date);
+                const dateStr = dateObj.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                const timeStr = dateObj.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
+                return `
+                <div class="exam-card" id="card-${index}">
+                    <div class="status" id="status-${index}">UPCOMING</div>
+                    <div class="subject-name">${exam.icon} ${exam.subject}</div>
+                    <div class="exam-time">
+                        <span>📅 ${dateStr}</span>
+                        <span>⏰ ${timeStr}</span>
+                    </div>
+                    <div class="timer" id="timer-${index}">
+                        <div class="time-box"><span class="time-val d">00</span><span class="time-label">Ngày</span></div>
+                        <div class="time-box"><span class="time-val h">00</span><span class="time-label">Giờ</span></div>
+                        <div class="time-box"><span class="time-val m">00</span><span class="time-label">Phút</span></div>
+                        <div class="time-box"><span class="time-val s">00</span><span class="time-label">Giây</span></div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        renderCards();
+
+        // --- 3. Countdown Logic ---
+        function updateCountdown() {
+            const now = new Date().getTime();
+
+            exams.forEach((exam, index) => {
+                const countDownDate = new Date(exam.date).getTime();
+                const distance = countDownDate - now;
+                
+                const card = document.getElementById(`card-${index}`);
+                const statusBadge = document.getElementById(`status-${index}`);
+                const timerDiv = document.getElementById(`timer-${index}`);
+
+                if (distance < 0) {
+                    // Đã thi xong
+                    timerDiv.innerHTML = '<h3 style="color: #55ff55; text-align:center; width:100%">MISSION COMPLETED</h3>';
+                    statusBadge.innerText = "DONE";
+                    statusBadge.className = "status done";
+                    card.style.opacity = "0.6"; // Làm mờ nhẹ
+                } else {
+                    // Tính toán thời gian
+                    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                    // Update DOM
+                    timerDiv.querySelector('.d').innerText = days < 10 ? '0' + days : days;
+                    timerDiv.querySelector('.h').innerText = hours < 10 ? '0' + hours : hours;
+                    timerDiv.querySelector('.m').innerText = minutes < 10 ? '0' + minutes : minutes;
+                    timerDiv.querySelector('.s').innerText = seconds < 10 ? '0' + seconds : seconds;
+
+                    // Hiệu ứng "Sắp thi" (còn dưới 3 ngày)
+                    if (days < 3) {
+                        statusBadge.innerText = "URGENT";
+                        statusBadge.className = "status urgent";
+                        card.style.borderColor = "#ff5555";
+                    }
+                }
+            });
+        }
+
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+
+        // --- 4. Matrix Rain Effect (Canvas) ---
+        const canvas = document.getElementById('matrix-bg');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const katakana = 'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン';
+        const latin = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const nums = '0123456789';
+        const alphabet = katakana + latin + nums;
+
+        const fontSize = 16;
+        const columns = canvas.width/fontSize;
+
+        const rainDrops = [];
+        for( let x = 0; x < columns; x++ ) {
+            rainDrops[x] = 1;
+        }
+
+        const draw = () => {
+            ctx.fillStyle = 'rgba(5, 5, 5, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#0F0'; // Green text
+            ctx.font = fontSize + 'px monospace';
+
+            for(let i = 0; i < rainDrops.length; i++) {
+                const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+                // Màu xanh ngẫu nhiên đậm nhạt để tạo chiều sâu
+                ctx.fillStyle = `rgba(0, ${Math.floor(Math.random() * 155) + 100}, 255, 0.8)`; 
+                ctx.fillText(text, i*fontSize, rainDrops[i]*fontSize);
+
+                if(rainDrops[i]*fontSize > canvas.height && Math.random() > 0.975){
+                    rainDrops[i] = 0;
+                }
+                rainDrops[i]++;
+            }
+        };
+
+        setInterval(draw, 30);
+
+        // Resize handler
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+    </script>
+</body>
+</html>
